@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: eks-micro
+  namespace: default
+spec:
+  type: ClusterIP
+  selector:
+    app: eks-micro
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: eks-micro
+  namespace: default
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/healthcheck-path: /health
+spec:
+  ingressClassName: alb
+  rules:
+    - http:
+        paths:
+          - path: /eks-micro(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: eks-micro
+                port:
+                  name: http
